@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#111827">
+  <title>InventoryRoad</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <div id="toast" class="toast" hidden></div>
+
+  <main id="loginView" class="login-shell">
+    <section class="login-card">
+      <div class="brand-mark">IR</div>
+      <h1>InventoryRoad</h1>
+      <p class="muted">RV Appraisal & Inventory Management</p>
+      <form id="loginForm" class="stack">
+        <label>Email<input id="loginEmail" type="email" autocomplete="username" required></label>
+        <label>Password<input id="loginPassword" type="password" autocomplete="current-password" required></label>
+        <button id="loginButton" class="btn primary" type="submit">Sign in</button>
+      </form>
+      <p id="loginError" class="error" hidden></p>
+    </section>
+  </main>
+
+  <div id="appView" hidden>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a class="brand" href="#dashboard"><span class="brand-mark small">IR</span><span>InventoryRoad</span></a>
+        <nav class="nav">
+          <a href="#dashboard" data-nav="dashboard">Dashboard</a>
+          <a href="#appraisals" data-nav="appraisals">Appraisals</a>
+          <a href="#inventory" data-nav="inventory">Inventory</a>
+          <a class="btn primary small-btn" href="/appraisal/">+ Appraisal</a>
+        </nav>
+        <div class="userbox">
+          <div><strong id="userName">User</strong><span id="userRole" class="user-role"></span></div>
+          <button id="signOutButton" class="btn ghost small-btn" type="button">Sign out</button>
+        </div>
+      </div>
+    </header>
+
+    <section class="page-shell">
+      <div id="pageHeader" class="page-header"></div>
+      <div id="pageContent"></div>
+    </section>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
