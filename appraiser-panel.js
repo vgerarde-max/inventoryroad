@@ -1,6 +1,6 @@
 (function(){
   const money=v=>v===null||v===undefined||v===''?'':Number(v);
-  const esc2=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const esc2=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
   let users=[];
 
   async function loadUsers(){
@@ -15,12 +15,12 @@
   function row(n,r={}){return `<div class="appraiser-row" data-review-order="${n}"><div class="field"><label>Appraiser ${n}<select data-appraiser>${userOptions(r.appraiser_user_id)}</select></label></div><div class="field"><label>Trade<input data-trade type="number" step="1" value="${esc2(money(r.trade_offer))}"></label></div><div class="field"><label>Buy<input data-buy type="number" step="1" value="${esc2(money(r.buy_offer))}"></label></div><div class="field"><label>Consign<input data-consign type="number" step="1" value="${esc2(money(r.consign_offer))}"></label></div></div>`}
   async function render(){
     const m=location.hash.match(/^#appraisals\/([^/]+)/); if(!m)return;
-    const id=m[1], detail=document.querySelector('.detail-grid > .card'); if(!detail)return;
+    const id=m[1], grid=document.querySelector('.detail-grid'); if(!grid)return;
     if(!users.length)await loadUsers(); const reviews=await loadReviews(id); if(location.hash!==`#appraisals/${id}`)return;
     document.getElementById('appraiserValuePanel')?.remove();
-    const section=document.createElement('div'); section.className='section'; section.id='appraiserValuePanel';
-    section.innerHTML=`<h2>Appraisers & Values</h2><p class="muted">Assign up to three users with appraisal access and enter each appraiser's Trade, Buy, and Consign values.</p><div class="appraiser-value-grid">${[1,2,3].map(n=>row(n,reviews.find(r=>r.review_order===n))).join('')}</div><div class="detail-actions"><button id="saveAppraiserValues" class="btn primary" type="button">Save Appraiser Values</button></div>`;
-    detail.appendChild(section); document.getElementById('saveAppraiserValues').onclick=()=>save(id);
+    const card=document.createElement('section'); card.className='card appraiser-value-card'; card.id='appraiserValuePanel';
+    card.innerHTML=`<div class="section"><h2>Appraisers & Values</h2><p class="muted">Assign up to three users with appraisal access and enter each appraiser's Trade, Buy, and Consign values.</p><div class="appraiser-value-grid">${[1,2,3].map(n=>row(n,reviews.find(r=>r.review_order===n))).join('')}</div><div class="detail-actions"><button id="saveAppraiserValues" class="btn primary" type="button">Save Appraiser Values</button></div></div>`;
+    grid.parentNode.insertBefore(card,grid.nextSibling); document.getElementById('saveAppraiserValues').onclick=()=>save(id);
   }
   async function save(appraisalId){
     const btn=document.getElementById('saveAppraiserValues'); if(btn){btn.disabled=true;btn.textContent='Saving…';}
