@@ -9,13 +9,21 @@
 
   function shell(title,a,body){
     return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${safe(title)} | InventoryRoad</title><style>
-    *{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;margin:0;color:#111827;background:#f3f4f6}.page{max-width:900px;margin:24px auto;background:#fff;padding:36px;box-shadow:0 2px 14px rgba(0,0,0,.08)}.top{display:flex;justify-content:space-between;gap:24px;align-items:flex-start;border-bottom:3px solid #111827;padding-bottom:18px;margin-bottom:24px}.brand{font-size:26px;font-weight:800}.subtitle{font-size:13px;color:#6b7280;margin-top:4px}.doc-title{text-align:right}.doc-title h1{margin:0;font-size:26px}.doc-title p{margin:6px 0 0;color:#6b7280}.summary{display:grid;grid-template-columns:1fr 1fr;gap:12px 24px;margin-bottom:24px}.summary div{padding:9px 0;border-bottom:1px solid #e5e7eb}.summary b{display:block;font-size:11px;text-transform:uppercase;color:#6b7280;margin-bottom:3px}.section{margin-top:24px}.section h2{font-size:15px;text-transform:uppercase;letter-spacing:.06em;margin:0 0 10px;border-bottom:2px solid #111827;padding-bottom:7px}table{width:100%;border-collapse:collapse}th,td{padding:10px 8px;border-bottom:1px solid #e5e7eb;text-align:left;vertical-align:top}th{width:42%;font-size:12px;color:#4b5563}.money{font-size:18px;font-weight:700}.offers{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.offer{border:2px solid #111827;padding:18px;text-align:center;border-radius:8px}.offer .label{font-size:12px;text-transform:uppercase;color:#6b7280}.offer .amount{font-size:28px;font-weight:800;margin-top:8px}.notes{white-space:pre-wrap;line-height:1.45;border:1px solid #d1d5db;padding:14px;min-height:70px}.signatures{display:grid;grid-template-columns:1fr 1fr;gap:36px;margin-top:54px}.sig{border-top:1px solid #111827;padding-top:8px;font-size:12px;color:#4b5563}.actions{text-align:right;max-width:900px;margin:18px auto}.actions button{background:#111827;color:#fff;border:0;border-radius:6px;padding:10px 16px;font-weight:700;cursor:pointer}@media print{body{background:#fff}.page{box-shadow:none;margin:0;max-width:none;padding:20px}.actions{display:none}}@media(max-width:650px){.page{margin:0;padding:22px}.top{display:block}.doc-title{text-align:left;margin-top:18px}.summary,.offers,.signatures{grid-template-columns:1fr}}
-    </style></head><body><div class="actions"><button onclick="window.print()">Print</button></div><main class="page"><div class="top"><div><div class="brand">InventoryRoad</div><div class="subtitle">RV Appraisal & Inventory Management</div></div><div class="doc-title"><h1>${safe(title)}</h1><p>${safe(new Date().toLocaleDateString())}</p></div></div><div class="summary"><div><b>Customer</b>${safe(a.customer_name||'—')}</div><div><b>Salesperson</b>${safe(a.salesperson||'—')}</div><div><b>Vehicle</b>${safe(vehicle(a))}</div><div><b>VIN</b>${safe(a.vin||'—')}</div><div><b>Location</b>${safe(locationName(a))}</div><div><b>Status</b>${safe(a.offer_status_text||a.status||'—')}</div></div>${body}</main></body></html>`;
+    *{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;margin:0;color:#111827;background:#f3f4f6}.page{max-width:900px;margin:24px auto;background:#fff;padding:36px;box-shadow:0 2px 14px rgba(0,0,0,.08)}.top{display:flex;justify-content:space-between;gap:24px;align-items:flex-start;border-bottom:3px solid #111827;padding-bottom:18px;margin-bottom:24px}.brand{font-size:26px;font-weight:800}.subtitle{font-size:13px;color:#6b7280;margin-top:4px}.doc-title{text-align:right}.doc-title h1{margin:0;font-size:26px}.doc-title p{margin:6px 0 0;color:#6b7280}.summary{display:grid;grid-template-columns:1fr 1fr;gap:12px 24px;margin-bottom:24px}.summary div{padding:9px 0;border-bottom:1px solid #e5e7eb}.summary b{display:block;font-size:11px;text-transform:uppercase;color:#6b7280;margin-bottom:3px}.section{margin-top:24px}.section h2{font-size:15px;text-transform:uppercase;letter-spacing:.06em;margin:0 0 10px;border-bottom:2px solid #111827;padding-bottom:7px}table{width:100%;border-collapse:collapse}th,td{padding:10px 8px;border-bottom:1px solid #e5e7eb;text-align:left;vertical-align:top}th{width:42%;font-size:12px;color:#4b5563}.money{font-size:18px;font-weight:700}.notes{white-space:pre-wrap;line-height:1.45;border:1px solid #d1d5db;padding:14px;min-height:70px}.signatures{display:grid;grid-template-columns:1fr 1fr;gap:36px;margin-top:54px}.sig{border-top:1px solid #111827;padding-top:8px;font-size:12px;color:#4b5563}.actions{text-align:right;max-width:900px;margin:18px auto}.actions button{background:#111827;color:#fff;border:0;border-radius:6px;padding:10px 16px;font-weight:700;cursor:pointer}@media print{body{background:#fff}.page{box-shadow:none;margin:0;max-width:none;padding:20px}.actions{display:none}}@media(max-width:650px){.page{margin:0;padding:22px}.top{display:block}.doc-title{text-align:left;margin-top:18px}.summary,.signatures{grid-template-columns:1fr}}
+    </style></head><body><div class="actions"><button onclick="window.print()">Print / Save PDF</button></div><main class="page"><div class="top"><div><div class="brand">InventoryRoad</div><div class="subtitle">RV Appraisal & Inventory Management</div></div><div class="doc-title"><h1>${safe(title)}</h1><p>${safe(new Date().toLocaleDateString())}</p></div></div><div class="summary"><div><b>Customer</b>${safe(a.customer_name||'—')}</div><div><b>Salesperson</b>${safe(a.salesperson||'—')}</div><div><b>Vehicle</b>${safe(vehicle(a))}</div><div><b>VIN</b>${safe(a.vin||'—')}</div><div><b>Location</b>${safe(locationName(a))}</div><div><b>Status</b>${safe(a.offer_status_text||a.status||'—')}</div></div>${body}</main></body></html>`;
+  }
+
+  function customerOfferShell(a){
+    const date=new Date().toLocaleDateString('en-US',{month:'2-digit',day:'2-digit',year:'numeric'});
+    return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Customer Offer | InventoryRoad</title><style>
+      @page{size:letter portrait;margin:.22in}
+      *{box-sizing:border-box}html,body{margin:0;padding:0;background:#fff;color:#243746;font-family:Arial,Helvetica,sans-serif}body{padding:0}.screen-actions{max-width:8.05in;margin:12px auto;text-align:right}.screen-actions button{background:#174766;color:#fff;border:0;border-radius:5px;padding:10px 16px;font-weight:700;cursor:pointer}.sheet{width:8.05in;min-height:10.45in;margin:0 auto;background:#fff;padding:0}.title{height:.70in;background:#174766;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:24px;letter-spacing:.3px}.vehicle{height:.45in;background:#f4f5f6;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#606970;margin-bottom:.12in}.options{display:grid;grid-template-columns:1fr 1fr 1fr;border-left:1px solid #83aaa5;border-right:1px solid #83aaa5}.option{min-height:3.62in;border-right:1px solid #c7d3d6;display:flex;flex-direction:column}.option:last-child{border-right:0}.option-head{height:.48in;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;color:#fff}.trade .option-head{background:#31935f}.consign .option-head{background:#efaf24;color:#253746}.buy .option-head{background:#2c919c}.option-body{flex:1;padding:.34in .17in .18in;text-align:center}.trade .option-body{background:#eef8f0}.consign .option-body{background:#fff8e8}.buy .option-body{background:#edf8fb}.amount{font-size:32px;line-height:1;font-weight:800;margin:.08in 0 .22in}.trade .amount,.trade .tag{color:#31935f}.consign .amount{color:#174766}.consign .tag{color:#a27619}.buy .amount,.buy .tag{color:#2c919c}.tag{font-size:13px;font-weight:800;margin-bottom:.13in}.copy{font-size:12.2px;line-height:1.48;text-align:left;color:#2e4655}.compare-title{height:.43in;background:#174766;color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;margin-top:.14in}.compare{display:grid;grid-template-columns:1fr 1fr 1fr;border:1px solid #cfd8dc;border-top:0}.compare div{height:.36in;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:800;color:#66717a;border-right:1px solid #cfd8dc}.compare div:last-child{border-right:0}.notice{margin-top:.16in;border:1px solid #dd9f96;background:#fff4f0;color:#994b40;min-height:.62in;padding:.12in .24in;display:flex;align-items:center;justify-content:center;text-align:center;font-size:10.6px;line-height:1.32;font-weight:700}.sign-row{display:grid;grid-template-columns:1.05fr 1.35fr 1.35fr;gap:.55in;margin-top:.36in;align-items:end}.sign{display:grid;grid-template-columns:auto 1fr;gap:.08in;align-items:end;font-size:10.5px;font-weight:700;color:#2b4150}.sign .line{height:.22in;border-bottom:1.3px solid #2b4150;display:flex;align-items:flex-end;padding:0 .04in .02in;font-weight:400}.footer{position:relative;margin-top:4.72in;font-size:9px;color:#8a9197}.footer .left{position:absolute;left:0}.footer .right{position:absolute;right:0;text-align:right}.footer .page{display:block}.num{margin-right:9px}@media print{.screen-actions{display:none}.sheet{margin:0;width:auto;min-height:auto}.footer{margin-top:4.72in}}@media(max-width:850px){.sheet{width:100%;min-height:auto}.title{font-size:20px}.options{grid-template-columns:1fr}.option{min-height:auto}.sign-row{grid-template-columns:1fr;gap:.18in}.footer{display:none}}
+    </style></head><body><div class="screen-actions"><button onclick="window.print()">Print / Save PDF</button></div><main class="sheet"><div class="title">THREE WAYS TO MOVE FORWARD</div><div class="vehicle">${safe(vehicle(a))}</div><section class="options"><article class="option trade"><div class="option-head"><span class="num">1</span> TRADE-IN</div><div class="option-body"><div class="amount">${safe(money(a.final_trade_offer))}</div><div class="tag">HIGHEST OFFER</div><div class="copy">Apply the full trade value toward your next RV purchase. You may also benefit from a sales-tax credit based on the taxable difference, subject to the transaction and applicable law.</div></div></article><article class="option consign"><div class="option-head"><span class="num">2</span> CONSIGNMENT</div><div class="option-body"><div class="amount">${safe(money(a.final_consign_offer))}</div><div class="tag">MIDDLE OPTION</div><div class="copy">We market and display the RV with no storage charge. Until it sells, you remain responsible for payments, insurance, maintenance, and any needed repairs.</div></div></article><article class="option buy"><div class="option-head"><span class="num">3</span> STRAIGHT BUY</div><div class="option-body"><div class="amount">${safe(money(a.final_buy_offer))}</div><div class="tag">IMMEDIATE WHOLESALE OFFER</div><div class="copy">The fastest, simplest exit. We purchase the RV directly and assume the time, expense, and risk involved in reconditioning and resale.</div></div></article></section><div class="compare-title">HOW THE OPTIONS COMPARE</div><div class="compare"><div>BEST OVERALL VALUE</div><div>TIME TO SELL</div><div>FASTEST CASH EXIT</div></div><div class="notice">All offers are pending mechanical inspection and owner final approval. Final value may change based on condition, title status, payoff, equipment, and inspection results. Offer expires 7 days from the date below.</div><div class="sign-row"><div class="sign"><span>Date:</span><span class="line">${safe(date)}</span></div><div class="sign"><span>Customer<br>Signature:</span><span class="line"></span></div><div class="sign"><span>Manager<br>Signature:</span><span class="line"></span></div></div><div class="footer"><span class="left">https://inventoryroad.com/</span><span class="right">${safe(new Date().toLocaleString('en-US',{month:'numeric',day:'numeric',year:'2-digit',hour:'numeric',minute:'2-digit'}))}<span class="page">Page 1 of 1</span></span></div></main></body></html>`;
   }
 
   function openDoc(html){
     const w=window.open('','_blank');
-    if(!w){ if(typeof toast==='function') toast('Please allow pop-ups to open the form.',true); return; }
+    if(!w){if(typeof toast==='function')toast('Please allow pop-ups to open the form.',true);return;}
     w.document.open();w.document.write(html);w.document.close();
   }
 
@@ -24,56 +32,25 @@
     openDoc(shell('Market Value',a,body));
   }
 
-  function openCustomerOffer(a){
-    const address=[a.customer_address_line1,a.customer_address_line2,a.customer_city,a.customer_state,a.customer_postal_code].filter(Boolean).join(', ');
-    const body=`<section class="section"><h2>Customer Offer</h2><div class="offers"><div class="offer"><div class="label">Trade-In</div><div class="amount">${safe(money(a.final_trade_offer))}</div></div><div class="offer"><div class="label">Straight Buy</div><div class="amount">${safe(money(a.final_buy_offer))}</div></div><div class="offer"><div class="label">Consignment</div><div class="amount">${safe(money(a.final_consign_offer))}</div></div></div></section><section class="section"><h2>Customer Information</h2><table>${row('Phone',a.customer_phone)}${row('Email',a.customer_email)}${row('Address',address||'—')}</table></section>${a.customer_notes?`<section class="section"><h2>Notes</h2><div class="notes">${safe(a.customer_notes)}</div></section>`:''}<section class="signatures"><div class="sig">Customer Signature</div><div class="sig">Date</div></section>`;
-    openDoc(shell('Customer Offer',a,body));
-  }
+  function openCustomerOffer(a){openDoc(customerOfferShell(a));}
 
-  function getAppraisal(id){
-    return typeof state!=='undefined'&&Array.isArray(state.appraisals)?state.appraisals.find(a=>String(a.id)===String(id)):null;
-  }
-
-  function wireButton(btn,type,id){
-    btn.addEventListener('click',e=>{
-      e.preventDefault();e.stopPropagation();
-      const a=getAppraisal(id);
-      if(!a) return;
-      type==='market'?openMarketValue(a):openCustomerOffer(a);
-    });
-  }
+  function getAppraisal(id){return typeof state!=='undefined'&&Array.isArray(state.appraisals)?state.appraisals.find(a=>String(a.id)===String(id)):null;}
+  function wireButton(btn,type,id){btn.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();const a=getAppraisal(id);if(!a)return;type==='market'?openMarketValue(a):openCustomerOffer(a);});}
 
   function addDashboardButtons(){
-    if(location.hash!=='#appraisals') return;
-    const table=document.querySelector('#appTable table');
-    if(!table||table.dataset.formsReady==='1') return;
-    const head=table.querySelector('thead tr');
-    if(head){const th=document.createElement('th');th.textContent='Forms';head.appendChild(th);}
-    table.querySelectorAll('tbody tr[data-id]').forEach(tr=>{
-      const td=document.createElement('td');
-      td.style.whiteSpace='nowrap';
-      const market=document.createElement('button');market.type='button';market.className='btn ghost small-btn';market.textContent='Market Value';market.style.marginRight='6px';
-      const offer=document.createElement('button');offer.type='button';offer.className='btn ghost small-btn';offer.textContent='Customer Offer';
-      wireButton(market,'market',tr.dataset.id);wireButton(offer,'offer',tr.dataset.id);
-      td.append(market,offer);tr.appendChild(td);
-    });
+    if(location.hash!=='#appraisals')return;
+    const table=document.querySelector('#appTable table');if(!table||table.dataset.formsReady==='1')return;
+    const head=table.querySelector('thead tr');if(head){const th=document.createElement('th');th.textContent='Forms';head.appendChild(th);}
+    table.querySelectorAll('tbody tr[data-id]').forEach(tr=>{const td=document.createElement('td');td.style.whiteSpace='nowrap';const market=document.createElement('button');market.type='button';market.className='btn ghost small-btn';market.textContent='Market Value';market.style.marginRight='6px';const offer=document.createElement('button');offer.type='button';offer.className='btn ghost small-btn';offer.textContent='Customer Offer';wireButton(market,'market',tr.dataset.id);wireButton(offer,'offer',tr.dataset.id);td.append(market,offer);tr.appendChild(td);});
     table.dataset.formsReady='1';
   }
 
   function addDetailButtons(){
-    if(!location.hash.startsWith('#appraisals/')) return;
-    const id=location.hash.split('/')[1];
-    const host=document.getElementById('pageContent');
-    if(!host||document.getElementById('appraisalFormButtons')) return;
-    const a=getAppraisal(id);if(!a) return;
-    const wrap=document.createElement('div');wrap.id='appraisalFormButtons';wrap.className='detail-actions';wrap.style.marginBottom='16px';
-    const market=document.createElement('button');market.type='button';market.className='btn ghost';market.textContent='Market Value';market.style.marginRight='8px';
-    const offer=document.createElement('button');offer.type='button';offer.className='btn ghost';offer.textContent='Customer Offer';
-    wireButton(market,'market',id);wireButton(offer,'offer',id);wrap.append(market,offer);host.insertBefore(wrap,host.firstChild);
+    if(!location.hash.startsWith('#appraisals/'))return;
+    const id=location.hash.split('/')[1],host=document.getElementById('pageContent');if(!host||document.getElementById('appraisalFormButtons'))return;const a=getAppraisal(id);if(!a)return;
+    const wrap=document.createElement('div');wrap.id='appraisalFormButtons';wrap.className='detail-actions';wrap.style.marginBottom='16px';const market=document.createElement('button');market.type='button';market.className='btn ghost';market.textContent='Market Value';market.style.marginRight='8px';const offer=document.createElement('button');offer.type='button';offer.className='btn ghost';offer.textContent='Customer Offer';wireButton(market,'market',id);wireButton(offer,'offer',id);wrap.append(market,offer);host.insertBefore(wrap,host.firstChild);
   }
 
   function refresh(){setTimeout(()=>{addDashboardButtons();addDetailButtons();},0)}
-  const observer=new MutationObserver(refresh);
-  window.addEventListener('DOMContentLoaded',()=>{observer.observe(document.body,{childList:true,subtree:true});refresh();});
-  window.addEventListener('hashchange',refresh);
+  const observer=new MutationObserver(refresh);window.addEventListener('DOMContentLoaded',()=>{observer.observe(document.body,{childList:true,subtree:true});refresh();});window.addEventListener('hashchange',refresh);
 })();
