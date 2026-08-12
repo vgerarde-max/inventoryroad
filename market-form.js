@@ -22,9 +22,22 @@
     return text.length>max?text.slice(0,max-1)+'…':text;
   }
 
+  async function getAppraiserRows(appraisalId){
+    if(typeof sb==='undefined'||!appraisalId)return [];
+    const {data,error}=await sb.from('appraisal_reviews')
+      .select('review_order,trade_offer,buy_offer,consign_offer,appraiser_user_id,profiles:appraiser_user_id(full_name)')
+      .eq('appraisal_id',appraisalId)
+      .order('review_order');
+    if(error){console.error('Could not load appraisers for Market Value Sheet',error);return [];}
+    return data||[];
+  }
+
   async function buildMarketPdf(a){
     const {PDFDocument,StandardFonts,rgb}=await loadPdfLib();
-    const src=await fetch(TEMPLATE,{cache:'no-store'});
+    const [src,reviews]=await Promise.all([
+      fetch(TEMPLATE,{cache:'no-store'}),
+      getAppraiserRows(a.id)
+    ]);
     if(!src.ok)throw new Error('Market Value Sheet template not found');
     const pdf=await PDFDocument.load(await src.arrayBuffer());
     const font=await pdf.embedFont(StandardFonts.Helvetica);
@@ -37,10 +50,11 @@
     const TEXT_Y_OFFSET=2.5;
     const draw=(page,text,x,y,size=8,opts={})=>{
       if(text===null||text===undefined||text==='')return;
-      page.drawText(fit(text,opts.max||55),{x:x*sx,y:(y+TEXT_Y_OFFSET)*sy,size:size*Math.min(sx,sy),font:opts.bold?bold:font,color:rgb(0,0,0)});
+      const yOffset=opts.yOffset===undefined?TEXT_Y_OFFSET:opts.yOffset;
+      page.drawText(fit(text,opts.max||55),{x:x*sx,y:(y+yOffset)*sy,size:size*Math.min(sx,sy),font:opts.bold?bold:font,color:rgb(0,0,0)});
     };
 
-    // Page 1 - customer / RV data. Coordinates are fixed to the uploaded PDF master.
+    // Page 1 - customer / RV data.
     draw(p1,a.customer_name,124,704,8.5,{max:38});
     draw(p1,today(),402,704,8.5,{max:14});
     draw(p1,a.salesperson,516,704,8.5,{max:18});
@@ -50,34 +64,43 @@
     draw(p1,a.customer_postal_code,535,681,8,{max:10});
     draw(p1,a.customer_phone,124,659,8,{max:18});
     draw(p1,a.customer_email,286,659,8,{max:34});
-
-    // Keep the RV identity values visibly above their underline instead of touching it.
     draw(p1,a.year,104,619,8.2,{max:6});
     draw(p1,a.make,191,619,8.2,{max:22});
     draw(p1,a.model,329,619,8.2,{max:25});
     draw(p1,a.floorplan,512,619,8.2,{max:14});
-
     draw(p1,a.mileage,431,588,8.2,{max:12});
-    draw(p1,a.lien_holder,121,93,8.2,{max:28});
-    draw(p1,money(a.estimated_payoff),496,93,8.2,{max:16});
+    draw(p1,a.lien_holder,121,98,8.2,{max:28});
+    draw(p1,money(a.estimated_payoff),496,98,8.2,{max:16});
 
-    // Page 2 - internal values.
+    // Page 2 - internal values. These are deliberately centered just above each printed line.
     const store=(typeof storeName==='function')?storeName(a.vehicle_store_id||a.store_id):'';
-    draw(p2,store,117,687,8.3,{max:25});
-    draw(p2,today(),501,687,8.3,{max:14});
-    draw(p2,money(a.estimated_payoff),120,661,8.3,{max:16});
-    draw(p2,`${money(a.book_wholesale_value)} / ${money(a.book_retail_value)}`,178,608,8.3,{max:28});
-    draw(p2,money(a.manager_recon??a.estimated_recon),485,608,8.3,{max:16});
-    draw(p2,money(a.acv),72,580,8.3,{max:14});
-    draw(p2,money(a.retail_value),214,580,8.3,{max:14});
-    draw(p2,a.mileage,425,554,8.3,{max:12});
-
-    // VIN belongs on the dedicated VIN line above the bid table.
+    draw(p2,store,117,692,8.3,{max:25});
+    draw(p2,today(),501,692,8.3,{max:14});
+    draw(p2,money(a.estimated_payoff),120,667,8.3,{max:16});
+    draw(p2,`${money(a.book_wholesale_value)} / ${money(a.book_retail_value)}`,178,624,8.3,{max:28});
+    draw(p2,money(a.manager_recon??a.estimated_recon),485,624,8.3,{max:16});
+    draw(p2,money(a.acv),72,604,8.3,{max:14});
+    draw(p2,money(a.retail_value),214,604,8.3,{max:14});
+    draw(p2,a.mileage,425,584,8.3,{max:12});
     draw(p2,a.vin,80,564,8.3,{max:24});
 
-    draw(p2,money(a.final_trade_offer),136,467,8.3,{max:14});
-    draw(p2,money(a.final_buy_offer),224,467,8.3,{max:14});
-    draw(p2,money(a.final_consign_offer),317,467,8.3,{max:14});
+    // Manager/Appraiser bid table. Each assigned appraiser is printed on its own row.
+    const bidRows=[519,497,475];
+    reviews.slice(0,3).forEach((r,i)=>{
+      const y=bidRows[i];
+      const manager=r.profiles?.full_name||'Appraiser';
+      draw(p2,manager,43,y,7.7,{max:22});
+      draw(p2,money(r.trade_offer),166,y,8.1,{max:14});
+      draw(p2,money(r.buy_offer),288,y,8.1,{max:14});
+      draw(p2,money(r.consign_offer),412,y,8.1,{max:14});
+    });
+
+    // Final approved figures use the fourth row, directly beneath the individual appraisers.
+    const finalY=453;
+    draw(p2,'FINAL',43,finalY,7.7,{max:10,bold:true});
+    draw(p2,money(a.final_trade_offer),166,finalY,8.1,{max:14,bold:true});
+    draw(p2,money(a.final_buy_offer),288,finalY,8.1,{max:14,bold:true});
+    draw(p2,money(a.final_consign_offer),412,finalY,8.1,{max:14,bold:true});
 
     return pdf.save();
   }
