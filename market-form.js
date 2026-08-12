@@ -50,10 +50,13 @@
     draw(p1,a.customer_postal_code,535,681,8,{max:10});
     draw(p1,a.customer_phone,124,659,8,{max:18});
     draw(p1,a.customer_email,286,659,8,{max:34});
-    draw(p1,a.year,104,612,8.2,{max:6});
-    draw(p1,a.make,191,612,8.2,{max:22});
-    draw(p1,a.model,329,612,8.2,{max:25});
-    draw(p1,a.floorplan,512,612,8.2,{max:14});
+
+    // Keep the RV identity values visibly above their underline instead of touching it.
+    draw(p1,a.year,104,619,8.2,{max:6});
+    draw(p1,a.make,191,619,8.2,{max:22});
+    draw(p1,a.model,329,619,8.2,{max:25});
+    draw(p1,a.floorplan,512,619,8.2,{max:14});
+
     draw(p1,a.mileage,431,588,8.2,{max:12});
     draw(p1,a.lien_holder,121,93,8.2,{max:28});
     draw(p1,money(a.estimated_payoff),496,93,8.2,{max:16});
@@ -68,7 +71,10 @@
     draw(p2,money(a.acv),72,580,8.3,{max:14});
     draw(p2,money(a.retail_value),214,580,8.3,{max:14});
     draw(p2,a.mileage,425,554,8.3,{max:12});
-    draw(p2,a.vin,80,527,8.3,{max:24});
+
+    // VIN belongs on the dedicated VIN line above the bid table.
+    draw(p2,a.vin,80,564,8.3,{max:24});
+
     draw(p2,money(a.final_trade_offer),136,467,8.3,{max:14});
     draw(p2,money(a.final_buy_offer),224,467,8.3,{max:14});
     draw(p2,money(a.final_consign_offer),317,467,8.3,{max:14});
