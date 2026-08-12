@@ -54,7 +54,6 @@
       page.drawText(fit(text,opts.max||55),{x:x*sx,y:(y+yOffset)*sy,size:size*Math.min(sx,sy),font:opts.bold?bold:font,color:rgb(0,0,0)});
     };
 
-    // Page 1 - customer / RV data.
     draw(p1,a.customer_name,124,704,8.5,{max:38});
     draw(p1,today(),402,704,8.5,{max:14});
     draw(p1,a.salesperson,516,704,8.5,{max:18});
@@ -72,7 +71,6 @@
     draw(p1,a.lien_holder,121,98,8.2,{max:28});
     draw(p1,money(a.estimated_payoff),496,98,8.2,{max:16});
 
-    // Page 2 - positions calibrated from the marked-up form screenshot.
     const store=(typeof storeName==='function')?storeName(a.vehicle_store_id||a.store_id):'';
     draw(p2,store,117,692,8.3,{max:25});
     draw(p2,today(),500,692,8.3,{max:14});
@@ -84,7 +82,6 @@
     draw(p2,a.mileage,425,584,8.3,{max:12});
     draw(p2,a.vin,92,564,8.3,{max:24});
 
-    // Manager/Appraiser bid table. Values are inset from the $ markers and centered vertically in each row.
     const bidRows=[515,493,471];
     reviews.slice(0,3).forEach((r,i)=>{
       const y=bidRows[i];
@@ -95,7 +92,11 @@
       draw(p2,money(r.consign_offer),421,y,8.1,{max:14});
     });
 
-    // Final approved figures use the printed FINAL row.
+    // Actual comparable prices, one per appraisal row in the Comps column.
+    [a.comp_1_price,a.comp_2_price,a.comp_3_price].forEach((price,i)=>{
+      draw(p2,money(price),350,bidRows[i],8.1,{max:14});
+    });
+
     const finalY=449;
     draw(p2,'FINAL',43,finalY,7.7,{max:10,bold:true});
     draw(p2,money(a.final_trade_offer),177,finalY,8.1,{max:14,bold:true});
