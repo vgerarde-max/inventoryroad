@@ -4,6 +4,7 @@
 
   const val=v=>v===null||v===undefined?'':String(v);
   const money=v=>v===null||v===undefined||v===''?'':new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(Number(v));
+  const moneyNumber=v=>money(v).replace(/^\$/,'');
   const today=()=>new Date().toLocaleDateString('en-US');
 
   function loadPdfLib(){
@@ -34,24 +35,27 @@
 
   async function buildMarketPdf(a){
     const {PDFDocument,StandardFonts,rgb}=await loadPdfLib();
-    const [src,reviews]=await Promise.all([
-      fetch(TEMPLATE,{cache:'no-store'}),
-      getAppraiserRows(a.id)
-    ]);
+    const [src,reviews]=await Promise.all([fetch(TEMPLATE,{cache:'no-store'}),getAppraiserRows(a.id)]);
     if(!src.ok)throw new Error('Market Value Sheet template not found');
     const pdf=await PDFDocument.load(await src.arrayBuffer());
     const font=await pdf.embedFont(StandardFonts.Helvetica);
     const bold=await pdf.embedFont(StandardFonts.HelveticaBold);
     const pages=pdf.getPages();
     if(pages.length<2)throw new Error('Market Value Sheet template must be two pages');
-
-    const p1=pages[0], p2=pages[1];
-    const sx=p1.getWidth()/612, sy=p1.getHeight()/792;
+    const p1=pages[0],p2=pages[1];
+    const sx=p1.getWidth()/612,sy=p1.getHeight()/792;
     const TEXT_Y_OFFSET=2.5;
     const draw=(page,text,x,y,size=8,opts={})=>{
       if(text===null||text===undefined||text==='')return;
       const yOffset=opts.yOffset===undefined?TEXT_Y_OFFSET:opts.yOffset;
       page.drawText(fit(text,opts.max||55),{x:x*sx,y:(y+yOffset)*sy,size:size*Math.min(sx,sy),font:opts.bold?bold:font,color:rgb(0,0,0)});
+    };
+    const drawCentered=(page,text,left,right,y,size=8,opts={})=>{
+      if(text===null||text===undefined||text==='')return;
+      const fitted=fit(text,opts.max||55),useFont=opts.bold?bold:font,scaledSize=size*Math.min(sx,sy);
+      const width=useFont.widthOfTextAtSize(fitted,scaledSize),l=left*sx,r=right*sx;
+      const x=l+(r-l-width)/2,yOffset=opts.yOffset===undefined?TEXT_Y_OFFSET:opts.yOffset;
+      page.drawText(fitted,{x,y:(y+yOffset)*sy,size:scaledSize,font:useFont,color:rgb(0,0,0)});
     };
 
     draw(p1,a.customer_name,124,704,8.5,{max:38});
@@ -82,26 +86,22 @@
     draw(p2,a.mileage,425,584,8.3,{max:12});
     draw(p2,a.vin,92,564,8.3,{max:24});
 
+    // Exact bid-table cells from the original PDF. Keep overlay text away from printed $ signs and borders.
     const bidRows=[515,493,471];
-    const bidX={trade:194,buy:336,consign:478};
+    const cells={manager:[19,116],trade:[116,204],buy:[204,292],consign:[292,382]};
     reviews.slice(0,3).forEach((r,i)=>{
-      const y=bidRows[i];
-      const manager=r.profiles?.full_name||'Appraiser';
-      draw(p2,manager,43,y,7.7,{max:22});
-      draw(p2,money(r.trade_offer),bidX.trade,y,8.1,{max:14});
-      draw(p2,money(r.buy_offer),bidX.buy,y,8.1,{max:14});
-      draw(p2,money(r.consign_offer),bidX.consign,y,8.1,{max:14});
-    });
-
-    [a.comp_1_price,a.comp_2_price,a.comp_3_price].forEach((price,i)=>{
-      draw(p2,money(price),350,bidRows[i],8.1,{max:14});
+      const y=bidRows[i],manager=r.profiles?.full_name||'Appraiser';
+      draw(p2,manager,24,y,7.7,{max:22});
+      drawCentered(p2,moneyNumber(r.trade_offer),128,201,y,8.1,{max:12});
+      drawCentered(p2,moneyNumber(r.buy_offer),216,289,y,8.1,{max:12});
+      drawCentered(p2,moneyNumber(r.consign_offer),304,379,y,8.1,{max:12});
     });
 
     const finalY=449;
-    draw(p2,'FINAL',43,finalY,7.7,{max:10,bold:true});
-    draw(p2,money(a.final_trade_offer),bidX.trade,finalY,8.1,{max:14,bold:true});
-    draw(p2,money(a.final_buy_offer),bidX.buy,finalY,8.1,{max:14,bold:true});
-    draw(p2,money(a.final_consign_offer),bidX.consign,finalY,8.1,{max:14,bold:true});
+    draw(p2,'FINAL',24,finalY,7.7,{max:10,bold:true});
+    drawCentered(p2,moneyNumber(a.final_trade_offer),128,201,finalY,8.1,{max:12,bold:true});
+    drawCentered(p2,moneyNumber(a.final_buy_offer),216,289,finalY,8.1,{max:12,bold:true});
+    drawCentered(p2,moneyNumber(a.final_consign_offer),304,379,finalY,8.1,{max:12,bold:true});
 
     return pdf.save();
   }
@@ -110,30 +110,16 @@
     let w=window.open('','_blank');
     if(!w){if(typeof toast==='function')toast('Please allow pop-ups to open the form.',true);return;}
     w.document.write('<!doctype html><title>Preparing Market Value Sheet…</title><body style="font-family:Arial;padding:24px">Preparing exact Market Value Sheet PDF…</body>');
-    try{
-      const bytes=await buildMarketPdf(a);
-      const blob=new Blob([bytes],{type:'application/pdf'});
-      const url=URL.createObjectURL(blob);
-      w.location.replace(url);
-      setTimeout(()=>URL.revokeObjectURL(url),120000);
-    }catch(err){
-      console.error(err);
-      w.close();
-      if(typeof toast==='function')toast('Could not create Market Value Sheet: '+err.message,true);
-      else alert('Could not create Market Value Sheet: '+err.message);
-    }
+    try{const bytes=await buildMarketPdf(a);const blob=new Blob([bytes],{type:'application/pdf'});const url=URL.createObjectURL(blob);w.location.replace(url);setTimeout(()=>URL.revokeObjectURL(url),120000);}
+    catch(err){console.error(err);w.close();if(typeof toast==='function')toast('Could not create Market Value Sheet: '+err.message,true);else alert('Could not create Market Value Sheet: '+err.message);}
   }
 
   document.addEventListener('click',e=>{
-    const b=e.target.closest('button');
-    if(!b||b.textContent.trim()!=='Market Value')return;
-    const tr=b.closest('tr[data-id]');
-    let id=tr&&tr.dataset.id;
+    const b=e.target.closest('button');if(!b||b.textContent.trim()!=='Market Value')return;
+    const tr=b.closest('tr[data-id]');let id=tr&&tr.dataset.id;
     if(!id&&location.hash.startsWith('#appraisals/'))id=location.hash.split('/')[1];
     if(!id||typeof state==='undefined'||!Array.isArray(state.appraisals))return;
-    const a=state.appraisals.find(x=>String(x.id)===String(id));
-    if(!a)return;
-    e.preventDefault();e.stopImmediatePropagation();
-    openMarket(a);
+    const a=state.appraisals.find(x=>String(x.id)===String(id));if(!a)return;
+    e.preventDefault();e.stopImmediatePropagation();openMarket(a);
   },true);
 })();
