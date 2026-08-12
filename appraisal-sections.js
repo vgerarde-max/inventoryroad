@@ -15,8 +15,17 @@
   }
   function consignField(a){return `<div class="field"><label>Final consign offer<input data-field="final_consign_offer" type="number" value="${escAudit(a.final_consign_offer??'')}"></label></div>`;}
   function compFields(a){return `<div class="field"><label>Comparable 1 price<input data-field="comp_1_price" type="number" value="${escAudit(a.comp_1_price??'')}"></label></div><div class="field"><label>Comparable 2 price<input data-field="comp_2_price" type="number" value="${escAudit(a.comp_2_price??'')}"></label></div><div class="field"><label>Comparable 3 price<input data-field="comp_3_price" type="number" value="${escAudit(a.comp_3_price??'')}"></label></div>`;}
+  function prepareManagerRecon(fields,a){
+    if(!fields)return;
+    const input=fields.querySelector('[data-field="manager_recon"]');
+    if(!input)return;
+    if(a.manager_recon===null||a.manager_recon===undefined||a.manager_recon==='')input.value='2200';
+    const field=input.closest('.field');
+    if(field&&!field.querySelector('.manager-recon-note'))field.insertAdjacentHTML('beforeend','<div class="muted manager-recon-note" style="margin-top:6px;font-size:.88em">Prefilled to estimate inspection fees and 30-day warranty costs.</div>');
+  }
   function organizeFinalOffers(fields,a){
     if(!fields)return;
+    prepareManagerRecon(fields,a);
     if(!fields.querySelector('[data-field="comp_1_price"]')){const notes=fields.querySelector('[data-field="comps_notes"]')?.closest('.field');if(notes)notes.insertAdjacentHTML('beforebegin',compFields(a));else fields.insertAdjacentHTML('beforeend',compFields(a));}
     if(!fields.querySelector('[data-field="final_consign_offer"]'))fields.insertAdjacentHTML('beforeend',consignField(a));
     const trade=fields.querySelector('[data-field="final_trade_offer"]')?.closest('.field');
