@@ -41,14 +41,14 @@
     if(location.hash!=='#appraisals')return;
     const table=document.querySelector('#appTable table');if(!table||table.dataset.formsReady==='1')return;
     const head=table.querySelector('thead tr');if(head){const th=document.createElement('th');th.textContent='Forms';head.appendChild(th);}
-    table.querySelectorAll('tbody tr[data-id]').forEach(tr=>{const td=document.createElement('td');td.style.whiteSpace='nowrap';const market=document.createElement('button');market.type='button';market.className='btn ghost small-btn';market.textContent='Market Value';market.style.marginRight='6px';const offer=document.createElement('button');offer.type='button';offer.className='btn ghost small-btn';offer.textContent='Customer Offer';wireButton(market,'market',tr.dataset.id);wireButton(offer,'offer',tr.dataset.id);td.append(market,offer);tr.appendChild(td);});
+    table.querySelectorAll('tbody tr[data-id]').forEach(tr=>{const td=document.createElement('td');td.style.whiteSpace='nowrap';const market=document.createElement('button');market.type='button';market.className='btn market-value-btn small-btn';market.textContent='Market Value';market.style.marginRight='6px';const offer=document.createElement('button');offer.type='button';offer.className='btn customer-offer-btn small-btn';offer.textContent='Customer Offer';wireButton(market,'market',tr.dataset.id);wireButton(offer,'offer',tr.dataset.id);td.append(market,offer);tr.appendChild(td);});
     table.dataset.formsReady='1';
   }
 
   function addDetailButtons(){
     if(!location.hash.startsWith('#appraisals/'))return;
     const id=location.hash.split('/')[1],host=document.getElementById('pageContent');if(!host||document.getElementById('appraisalFormButtons'))return;const a=getAppraisal(id);if(!a)return;
-    const wrap=document.createElement('div');wrap.id='appraisalFormButtons';wrap.className='detail-actions';wrap.style.marginBottom='16px';const market=document.createElement('button');market.type='button';market.className='btn ghost';market.textContent='Market Value';market.style.marginRight='8px';const offer=document.createElement('button');offer.type='button';offer.className='btn ghost';offer.textContent='Customer Offer';wireButton(market,'market',id);wireButton(offer,'offer',id);wrap.append(market,offer);host.insertBefore(wrap,host.firstChild);
+    const wrap=document.createElement('div');wrap.id='appraisalFormButtons';wrap.className='detail-actions';wrap.style.marginBottom='16px';const market=document.createElement('button');market.type='button';market.className='btn market-value-btn';market.textContent='Market Value';market.style.marginRight='8px';const offer=document.createElement('button');offer.type='button';offer.className='btn customer-offer-btn';offer.textContent='Customer Offer';wireButton(market,'market',id);wireButton(offer,'offer',id);wrap.append(market,offer);host.insertBefore(wrap,host.firstChild);
   }
 
   function refresh(){setTimeout(()=>{addDashboardButtons();addDetailButtons();},0)}
