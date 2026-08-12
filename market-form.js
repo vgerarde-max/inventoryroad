@@ -34,9 +34,10 @@
 
     const p1=pages[0], p2=pages[1];
     const sx=p1.getWidth()/612, sy=p1.getHeight()/792;
+    const TEXT_Y_OFFSET=2.5;
     const draw=(page,text,x,y,size=8,opts={})=>{
       if(text===null||text===undefined||text==='')return;
-      page.drawText(fit(text,opts.max||55),{x:x*sx,y:y*sy,size:size*Math.min(sx,sy),font:opts.bold?bold:font,color:rgb(0,0,0)});
+      page.drawText(fit(text,opts.max||55),{x:x*sx,y:(y+TEXT_Y_OFFSET)*sy,size:size*Math.min(sx,sy),font:opts.bold?bold:font,color:rgb(0,0,0)});
     };
 
     // Page 1 - customer / RV data. Coordinates are fixed to the uploaded PDF master.
