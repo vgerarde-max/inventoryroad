@@ -83,25 +83,25 @@
     draw(p2,a.vin,92,564,8.3,{max:24});
 
     const bidRows=[515,493,471];
+    const bidX={trade:194,buy:336,consign:478};
     reviews.slice(0,3).forEach((r,i)=>{
       const y=bidRows[i];
       const manager=r.profiles?.full_name||'Appraiser';
       draw(p2,manager,43,y,7.7,{max:22});
-      draw(p2,money(r.trade_offer),177,y,8.1,{max:14});
-      draw(p2,money(r.buy_offer),299,y,8.1,{max:14});
-      draw(p2,money(r.consign_offer),421,y,8.1,{max:14});
+      draw(p2,money(r.trade_offer),bidX.trade,y,8.1,{max:14});
+      draw(p2,money(r.buy_offer),bidX.buy,y,8.1,{max:14});
+      draw(p2,money(r.consign_offer),bidX.consign,y,8.1,{max:14});
     });
 
-    // Actual comparable prices, one per appraisal row in the Comps column.
     [a.comp_1_price,a.comp_2_price,a.comp_3_price].forEach((price,i)=>{
       draw(p2,money(price),350,bidRows[i],8.1,{max:14});
     });
 
     const finalY=449;
     draw(p2,'FINAL',43,finalY,7.7,{max:10,bold:true});
-    draw(p2,money(a.final_trade_offer),177,finalY,8.1,{max:14,bold:true});
-    draw(p2,money(a.final_buy_offer),299,finalY,8.1,{max:14,bold:true});
-    draw(p2,money(a.final_consign_offer),421,finalY,8.1,{max:14,bold:true});
+    draw(p2,money(a.final_trade_offer),bidX.trade,finalY,8.1,{max:14,bold:true});
+    draw(p2,money(a.final_buy_offer),bidX.buy,finalY,8.1,{max:14,bold:true});
+    draw(p2,money(a.final_consign_offer),bidX.consign,finalY,8.1,{max:14,bold:true});
 
     return pdf.save();
   }
