@@ -4,7 +4,7 @@
   let users=[];
 
   async function loadUsers(){
-    const {data,error}=await sb.from('appraisal_eligible_users').select('id,full_name,role').order('full_name');
+    const {data,error}=await sb.from('profiles').select('id,full_name,role').eq('is_active',true).order('full_name');
     if(error){console.error(error);return [];} users=data||[]; return users;
   }
   async function loadReviews(appraisalId){
