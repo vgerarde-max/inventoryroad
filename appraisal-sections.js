@@ -1,82 +1,34 @@
 (function(){
   const escAudit=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const labels={customer_name:'Customer name',customer_phone:'Phone',customer_email:'Email',salesperson:'Salesperson',customer_address_line1:'Address',customer_city:'City',customer_state:'State',customer_postal_code:'ZIP',year:'Year',make:'Make',model:'Model',floorplan:'Floorplan',vin:'VIN',rv_type:'RV type',mileage:'Mileage',vehicle_store_id:'Location',status:'Status',estimated_recon:'Estimated recon',manager_recon:'Manager recon',acv:'ACV',wholesale_value:'Wholesale value',retail_value:'Retail value',final_trade_offer:'Final trade offer',final_buy_offer:'Final buy offer',final_consign_offer:'Final consign offer',customer_notes:'Customer notes',comps_notes:'Comps notes'};
+  const labels={customer_name:'Customer name',customer_phone:'Phone',customer_email:'Email',salesperson:'Salesperson',customer_address_line1:'Address',customer_city:'City',customer_state:'State',customer_postal_code:'ZIP',year:'Year',make:'Make',model:'Model',floorplan:'Floorplan',vin:'VIN',rv_type:'RV type',mileage:'Mileage',vehicle_store_id:'Location',status:'Status',estimated_recon:'Estimated recon',manager_recon:'Manager recon',acv:'ACV',wholesale_value:'Wholesale value',retail_value:'Retail value',comp_1_price:'Comparable 1 price',comp_2_price:'Comparable 2 price',comp_3_price:'Comparable 3 price',final_trade_offer:'Final trade offer',final_buy_offer:'Final buy offer',final_consign_offer:'Final consign offer',customer_notes:'Customer notes',comps_notes:'Comps notes'};
   let history=[];
-
-  function section(title,body,open=true,cls=''){
-    return `<details class="appraisal-collapse ${cls}" ${open?'open':''}><summary>${escAudit(title)}<span class="collapse-chevron">⌄</span></summary><div class="collapse-body">${body}</div></details>`;
-  }
+  function section(title,body,open=true,cls=''){return `<details class="appraisal-collapse ${cls}" ${open?'open':''}><summary>${escAudit(title)}<span class="collapse-chevron">⌄</span></summary><div class="collapse-body">${body}</div></details>`;}
   function currentAppraisal(){const m=location.hash.match(/^#appraisals\/([^/]+)/);return m&&typeof state!=='undefined'?state.appraisals.find(a=>String(a.id)===m[1]):null;}
   function formatWhen(v){return v?new Date(v).toLocaleString('en-US',{month:'numeric',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}):'—';}
   function value(v,key){if(v===null||v===undefined||v==='')return 'blank';if(key==='vehicle_store_id'&&typeof storeName==='function')return storeName(v);return String(v);}
   function changeNote(changes){return Object.entries(changes).map(([k,c])=>`${labels[k]||k}: ${value(c.from,k)} → ${value(c.to,k)}`).join(' • ');}
   function consignField(a){return `<div class="field"><label>Final consign offer<input data-field="final_consign_offer" type="number" value="${escAudit(a.final_consign_offer??'')}"></label></div>`;}
+  function compFields(a){return `<div class="field"><label>Comparable 1 price<input data-field="comp_1_price" type="number" value="${escAudit(a.comp_1_price??'')}"></label></div><div class="field"><label>Comparable 2 price<input data-field="comp_2_price" type="number" value="${escAudit(a.comp_2_price??'')}"></label></div><div class="field"><label>Comparable 3 price<input data-field="comp_3_price" type="number" value="${escAudit(a.comp_3_price??'')}"></label></div>`;}
   function organizeFinalOffers(fields,a){
     if(!fields)return;
+    if(!fields.querySelector('[data-field="comp_1_price"]')){
+      const notes=fields.querySelector('[data-field="comps_notes"]')?.closest('.field');
+      if(notes)notes.insertAdjacentHTML('beforebegin',compFields(a));else fields.insertAdjacentHTML('beforeend',compFields(a));
+    }
     if(!fields.querySelector('[data-field="final_consign_offer"]'))fields.insertAdjacentHTML('beforeend',consignField(a));
     const trade=fields.querySelector('[data-field="final_trade_offer"]')?.closest('.field');
     const buy=fields.querySelector('[data-field="final_buy_offer"]')?.closest('.field');
     const consign=fields.querySelector('[data-field="final_consign_offer"]')?.closest('.field');
     if(!trade||!buy||!consign)return;
-    const row=document.createElement('div');row.className='final-offer-row field full';
-    trade.parentNode.insertBefore(row,trade);
-    row.append(trade,buy,consign);
+    const row=document.createElement('div');row.className='final-offer-row field full';trade.parentNode.insertBefore(row,trade);row.append(trade,buy,consign);
   }
-
-  async function loadHistory(id){
-    const {data,error}=await sb.from('status_history').select('id,note,changed_at,changed_by,profiles:changed_by(full_name)').eq('appraisal_id',id).order('changed_at',{ascending:false});
-    if(error){console.error(error);history=[];return;}history=data||[];
-  }
-  function historyHtml(a){
-    const initial=`<div class="history-item"><div class="history-main"><strong>Submission created</strong><div class="muted">Initial customer submission</div></div><div class="history-meta">${escAudit(a.salesperson||'Customer / external form')}<br>${escAudit(formatWhen(a.submitted_at||a.created_at))}</div></div>`;
-    const items=history.map(h=>`<div class="history-item"><div class="history-main"><strong>Record updated</strong><div class="muted">${escAudit(h.note||'Changes saved')}</div></div><div class="history-meta">${escAudit(h.profiles?.full_name||'User')}<br>${escAudit(formatWhen(h.changed_at))}</div></div>`).join('');
-    return `<div class="submission-summary"><dl class="kv"><dt>Status</dt><dd><span class="badge ${escAudit(a.status)}">${escAudit(typeof statusLabel==='function'?statusLabel(a.status,APPRAISAL_STATUSES):a.status)}</span></dd><dt>Submitted</dt><dd>${escAudit(formatWhen(a.submitted_at))}</dd><dt>Source</dt><dd>${escAudit(a.external_source||'—')}</dd><dt>Submission ID</dt><dd>${escAudit(a.external_submission_id||'—')}</dd></dl></div><h3 class="history-title">Change History</h3><div class="change-history">${items}${initial}</div>`;
-  }
+  async function loadHistory(id){const {data,error}=await sb.from('status_history').select('id,note,changed_at,changed_by,profiles:changed_by(full_name)').eq('appraisal_id',id).order('changed_at',{ascending:false});if(error){console.error(error);history=[];return;}history=data||[];}
+  function historyHtml(a){const initial=`<div class="history-item"><div class="history-main"><strong>Submission created</strong><div class="muted">Initial customer submission</div></div><div class="history-meta">${escAudit(a.salesperson||'Customer / external form')}<br>${escAudit(formatWhen(a.submitted_at||a.created_at))}</div></div>`;const items=history.map(h=>`<div class="history-item"><div class="history-main"><strong>Record updated</strong><div class="muted">${escAudit(h.note||'Changes saved')}</div></div><div class="history-meta">${escAudit(h.profiles?.full_name||'User')}<br>${escAudit(formatWhen(h.changed_at))}</div></div>`).join('');return `<div class="submission-summary"><dl class="kv"><dt>Status</dt><dd><span class="badge ${escAudit(a.status)}">${escAudit(typeof statusLabel==='function'?statusLabel(a.status,APPRAISAL_STATUSES):a.status)}</span></dd><dt>Submitted</dt><dd>${escAudit(formatWhen(a.submitted_at))}</dd><dt>Source</dt><dd>${escAudit(a.external_source||'—')}</dd><dt>Submission ID</dt><dd>${escAudit(a.external_submission_id||'—')}</dd></dl></div><h3 class="history-title">Change History</h3><div class="change-history">${items}${initial}</div>`;}
   function snapshot(){const o={};document.querySelectorAll('#pageContent [data-field]').forEach(el=>o[el.dataset.field]=el.value);return o;}
   function diff(before,after){const out={};Object.keys(after).forEach(k=>{if(String(before[k]??'')!==String(after[k]??''))out[k]={from:before[k]??'',to:after[k]??''};});return out;}
   async function logChanges(id,changes){if(!Object.keys(changes).length)return;const uid=state.session?.user?.id;if(!uid)return;const {error}=await sb.from('status_history').insert({appraisal_id:id,changed_by:uid,note:changeNote(changes),changed_at:new Date().toISOString()});if(error)console.error('Could not save appraisal history',error);}
-
-  function bindActions(a){
-    const save=document.getElementById('saveAppraisal');
-    if(save&&!save.dataset.rebound){
-      save.dataset.rebound='1';
-      save.addEventListener('click',async e=>{
-        e.preventDefault();
-        const before={...a};
-        const after=snapshot();
-        if(typeof window.saveAppraisal==='function') await window.saveAppraisal(a.id);
-        else if(typeof saveAppraisal==='function') await saveAppraisal(a.id);
-        await logChanges(a.id,diff(before,after));
-      });
-    }
-    const del=document.getElementById('deleteAppraisal');
-    if(del&&!del.dataset.rebound){
-      del.dataset.rebound='1';
-      del.addEventListener('click',e=>{e.preventDefault();if(typeof window.deleteAppraisal==='function')window.deleteAppraisal(a.id);else if(typeof deleteAppraisal==='function')deleteAppraisal(a.id);});
-    }
-  }
-
-  function enhance(){
-    const a=currentAppraisal(),page=document.getElementById('pageContent');if(!a||!page)return;
-    const grid=page.querySelector('.detail-grid');if(!grid||grid.querySelector(':scope > .appraisal-collapse'))return;
-    const main=grid.querySelector(':scope > section.card'),aside=grid.querySelector(':scope > aside');if(!main||!aside)return;
-    const parts=[...main.querySelectorAll(':scope > .section')];if(parts.length<3)return;
-    const customer=parts[0].querySelector('.fields')?.outerHTML||'';
-    const vehicle=parts[1].querySelector('.fields')?.outerHTML||'';
-    const appraisalFieldsEl=parts[2].querySelector('.fields');
-    organizeFinalOffers(appraisalFieldsEl,a);
-    const appraisalFields=appraisalFieldsEl?.outerHTML||'';
-    const actions=parts[2].querySelector('.detail-actions')?.outerHTML||'';
-    grid.className='grid detail-grid appraisal-section-stack';
-    grid.innerHTML=`${section('Customer',customer,true,'customer-section')}${section('Vehicle',vehicle,true,'vehicle-section')}${section('Submission',historyHtml(a),false,'submission-section')}${section('Photos','<div id="appraisalPhotos">Loading photos…</div>',false,'photos-section')}${section('Appraisal',appraisalFields+actions,true,'appraisal-section')}`;
-    bindActions(a);
-    if(typeof loadPhotos==='function')loadPhotos('appraisal',a.id);
-    window.dispatchEvent(new CustomEvent('inventoryroad:appraisal-layout-ready',{detail:{id:a.id}}));
-  }
+  function bindActions(a){const save=document.getElementById('saveAppraisal');if(save&&!save.dataset.rebound){save.dataset.rebound='1';save.addEventListener('click',async e=>{e.preventDefault();const before={...a};const after=snapshot();if(typeof window.saveAppraisal==='function')await window.saveAppraisal(a.id);else if(typeof saveAppraisal==='function')await saveAppraisal(a.id);await logChanges(a.id,diff(before,after));});}const del=document.getElementById('deleteAppraisal');if(del&&!del.dataset.rebound){del.dataset.rebound='1';del.addEventListener('click',e=>{e.preventDefault();if(typeof window.deleteAppraisal==='function')window.deleteAppraisal(a.id);else if(typeof deleteAppraisal==='function')deleteAppraisal(a.id);});}}
+  function enhance(){const a=currentAppraisal(),page=document.getElementById('pageContent');if(!a||!page)return;const grid=page.querySelector('.detail-grid');if(!grid||grid.querySelector(':scope > .appraisal-collapse'))return;const main=grid.querySelector(':scope > section.card'),aside=grid.querySelector(':scope > aside');if(!main||!aside)return;const parts=[...main.querySelectorAll(':scope > .section')];if(parts.length<3)return;const customer=parts[0].querySelector('.fields')?.outerHTML||'';const vehicle=parts[1].querySelector('.fields')?.outerHTML||'';const appraisalFieldsEl=parts[2].querySelector('.fields');organizeFinalOffers(appraisalFieldsEl,a);const appraisalFields=appraisalFieldsEl?.outerHTML||'';const actions=parts[2].querySelector('.detail-actions')?.outerHTML||'';grid.className='grid detail-grid appraisal-section-stack';grid.innerHTML=`${section('Customer',customer,true,'customer-section')}${section('Vehicle',vehicle,true,'vehicle-section')}${section('Submission',historyHtml(a),false,'submission-section')}${section('Photos','<div id="appraisalPhotos">Loading photos…</div>',false,'photos-section')}${section('Appraisal',appraisalFields+actions,true,'appraisal-section')}`;bindActions(a);if(typeof loadPhotos==='function')loadPhotos('appraisal',a.id);window.dispatchEvent(new CustomEvent('inventoryroad:appraisal-layout-ready',{detail:{id:a.id}}));}
   async function refresh(){const a=currentAppraisal();if(!a)return;await loadHistory(a.id);enhance();}
-  let timer;
-  const schedule=()=>{clearTimeout(timer);timer=setTimeout(refresh,80)};
-  const obs=new MutationObserver(()=>{const a=currentAppraisal(),grid=document.querySelector('#pageContent .detail-grid');if(a&&grid&&!grid.querySelector(':scope > .appraisal-collapse'))schedule();});
-  window.addEventListener('hashchange',schedule);
-  window.addEventListener('load',()=>{const p=document.getElementById('pageContent');if(p)obs.observe(p,{childList:true,subtree:true});schedule();});
+  let timer;const schedule=()=>{clearTimeout(timer);timer=setTimeout(refresh,80)};const obs=new MutationObserver(()=>{const a=currentAppraisal(),grid=document.querySelector('#pageContent .detail-grid');if(a&&grid&&!grid.querySelector(':scope > .appraisal-collapse'))schedule();});window.addEventListener('hashchange',schedule);window.addEventListener('load',()=>{const p=document.getElementById('pageContent');if(p)obs.observe(p,{childList:true,subtree:true});schedule();});
 })();
