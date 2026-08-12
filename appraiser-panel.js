@@ -18,9 +18,11 @@
     const id=m[1], grid=document.querySelector('.detail-grid'); if(!grid)return;
     if(!users.length)await loadUsers(); const reviews=await loadReviews(id); if(location.hash!==`#appraisals/${id}`)return;
     document.getElementById('appraiserValuePanel')?.remove();
-    const card=document.createElement('section'); card.className='card appraiser-value-card'; card.id='appraiserValuePanel';
-    card.innerHTML=`<div class="section"><h2>Appraisers & Values</h2><p class="muted">Assign up to three users and enter each appraiser's Trade, Buy, and Consign values.</p><div class="appraiser-value-grid">${[1,2,3].map(n=>row(n,reviews.find(r=>r.review_order===n))).join('')}</div><div class="detail-actions"><button id="saveAppraiserValues" class="btn primary" type="button">Save Appraiser Values</button></div></div>`;
-    grid.parentNode.insertBefore(card,grid.nextSibling); document.getElementById('saveAppraiserValues').onclick=()=>save(id);
+    const card=document.createElement('details'); card.className='appraisal-collapse appraiser-value-card'; card.id='appraiserValuePanel'; card.open=true;
+    card.innerHTML=`<summary>Appraisers & Values<span class="collapse-chevron">⌄</span></summary><div class="collapse-body"><p class="muted">Assign up to three users and enter each appraiser's Trade, Buy, and Consign values.</p><div class="appraiser-value-grid">${[1,2,3].map(n=>row(n,reviews.find(r=>r.review_order===n))).join('')}</div><div class="detail-actions"><button id="saveAppraiserValues" class="btn primary" type="button">Save Appraiser Values</button></div></div>`;
+    const appraisalSection=grid.querySelector('.appraisal-section');
+    if(appraisalSection)grid.insertBefore(card,appraisalSection);else grid.appendChild(card);
+    document.getElementById('saveAppraiserValues').onclick=()=>save(id);
   }
   async function save(appraisalId){
     const btn=document.getElementById('saveAppraiserValues'); if(btn){btn.disabled=true;btn.textContent='Saving…';}
@@ -36,10 +38,11 @@
     }catch(e){console.error(e);if(typeof toast==='function')toast(e.message||'Could not save appraiser values.',true);}
     finally{if(btn){btn.disabled=false;btn.textContent='Save Appraiser Values';}}
   }
-  function scheduleRender(){clearTimeout(window.__appraiserPanelTimer);window.__appraiserPanelTimer=setTimeout(render,120)}
+  function scheduleRender(){clearTimeout(window.__appraiserPanelTimer);window.__appraiserPanelTimer=setTimeout(render,160)}
   const obs=new MutationObserver(mutations=>{
     if(mutations.some(m=>[...m.addedNodes].some(n=>n.nodeType===1&&!n.closest?.('#appraiserValuePanel'))))scheduleRender();
   });
+  window.addEventListener('inventoryroad:appraisal-layout-ready',scheduleRender);
   window.addEventListener('hashchange',scheduleRender);
   window.addEventListener('load',()=>{const page=document.getElementById('pageContent');if(page)obs.observe(page,{childList:true,subtree:true});scheduleRender()});
 })();
