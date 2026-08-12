@@ -11,6 +11,17 @@
   function value(v,key){if(v===null||v===undefined||v==='')return 'blank';if(key==='vehicle_store_id'&&typeof storeName==='function')return storeName(v);return String(v);}
   function changeNote(changes){return Object.entries(changes).map(([k,c])=>`${labels[k]||k}: ${value(c.from,k)} → ${value(c.to,k)}`).join(' • ');}
   function consignField(a){return `<div class="field"><label>Final consign offer<input data-field="final_consign_offer" type="number" value="${escAudit(a.final_consign_offer??'')}"></label></div>`;}
+  function organizeFinalOffers(fields,a){
+    if(!fields)return;
+    if(!fields.querySelector('[data-field="final_consign_offer"]'))fields.insertAdjacentHTML('beforeend',consignField(a));
+    const trade=fields.querySelector('[data-field="final_trade_offer"]')?.closest('.field');
+    const buy=fields.querySelector('[data-field="final_buy_offer"]')?.closest('.field');
+    const consign=fields.querySelector('[data-field="final_consign_offer"]')?.closest('.field');
+    if(!trade||!buy||!consign)return;
+    const row=document.createElement('div');row.className='final-offer-row field full';
+    trade.parentNode.insertBefore(row,trade);
+    row.append(trade,buy,consign);
+  }
 
   async function loadHistory(id){
     const {data,error}=await sb.from('status_history').select('id,note,changed_at,changed_by,profiles:changed_by(full_name)').eq('appraisal_id',id).order('changed_at',{ascending:false});
@@ -53,7 +64,7 @@
     const customer=parts[0].querySelector('.fields')?.outerHTML||'';
     const vehicle=parts[1].querySelector('.fields')?.outerHTML||'';
     const appraisalFieldsEl=parts[2].querySelector('.fields');
-    if(appraisalFieldsEl&&!appraisalFieldsEl.querySelector('[data-field="final_consign_offer"]'))appraisalFieldsEl.insertAdjacentHTML('beforeend',consignField(a));
+    organizeFinalOffers(appraisalFieldsEl,a);
     const appraisalFields=appraisalFieldsEl?.outerHTML||'';
     const actions=parts[2].querySelector('.detail-actions')?.outerHTML||'';
     grid.className='grid detail-grid appraisal-section-stack';
