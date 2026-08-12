@@ -15,6 +15,8 @@ body,.public-page{background:var(--bg);color:var(--text)}
 .btn.primary{background:var(--action);color:#fff;border-color:var(--action)}.btn.primary:hover{background:var(--action-hover);border-color:var(--action-hover)}
 .btn.ghost{background:#fff;color:#2563eb;border-color:#2563eb}.btn.ghost:hover{background:#eff6ff}
 .btn.danger{background:#dc2626;color:#fff;border-color:#dc2626}.btn.danger:hover{background:#b91c1c;border-color:#b91c1c}
+.btn.market-value-btn{background:#facc15;color:#422006;border-color:#eab308}.btn.market-value-btn:hover{background:#eab308;border-color:#ca8a04}
+.btn.customer-offer-btn{background:#16a34a;color:#fff;border-color:#15803d}.btn.customer-offer-btn:hover{background:#15803d;border-color:#166534}
 .nav>a.btn{color:#fff}
 .flag.bad{color:#dc2626}.flag.warn,.flag.ok{color:#171717}
 .toast{background:#000;color:#fff}.toast.bad{background:#dc2626}
