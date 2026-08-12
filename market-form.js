@@ -72,35 +72,35 @@
     draw(p1,a.lien_holder,121,98,8.2,{max:28});
     draw(p1,money(a.estimated_payoff),496,98,8.2,{max:16});
 
-    // Page 2 - internal values. These are deliberately centered just above each printed line.
+    // Page 2 - positions calibrated from the marked-up form screenshot.
     const store=(typeof storeName==='function')?storeName(a.vehicle_store_id||a.store_id):'';
     draw(p2,store,117,692,8.3,{max:25});
-    draw(p2,today(),501,692,8.3,{max:14});
-    draw(p2,money(a.estimated_payoff),120,667,8.3,{max:16});
+    draw(p2,today(),500,692,8.3,{max:14});
+    draw(p2,money(a.estimated_payoff),129,667,8.3,{max:16});
     draw(p2,`${money(a.book_wholesale_value)} / ${money(a.book_retail_value)}`,178,624,8.3,{max:28});
     draw(p2,money(a.manager_recon??a.estimated_recon),485,624,8.3,{max:16});
-    draw(p2,money(a.acv),72,604,8.3,{max:14});
-    draw(p2,money(a.retail_value),214,604,8.3,{max:14});
+    draw(p2,money(a.acv),80,604,8.3,{max:14});
+    draw(p2,money(a.retail_value),220,604,8.3,{max:14});
     draw(p2,a.mileage,425,584,8.3,{max:12});
-    draw(p2,a.vin,80,564,8.3,{max:24});
+    draw(p2,a.vin,92,564,8.3,{max:24});
 
-    // Manager/Appraiser bid table. Each assigned appraiser is printed on its own row.
-    const bidRows=[519,497,475];
+    // Manager/Appraiser bid table. Values are inset from the $ markers and centered vertically in each row.
+    const bidRows=[515,493,471];
     reviews.slice(0,3).forEach((r,i)=>{
       const y=bidRows[i];
       const manager=r.profiles?.full_name||'Appraiser';
       draw(p2,manager,43,y,7.7,{max:22});
-      draw(p2,money(r.trade_offer),166,y,8.1,{max:14});
-      draw(p2,money(r.buy_offer),288,y,8.1,{max:14});
-      draw(p2,money(r.consign_offer),412,y,8.1,{max:14});
+      draw(p2,money(r.trade_offer),177,y,8.1,{max:14});
+      draw(p2,money(r.buy_offer),299,y,8.1,{max:14});
+      draw(p2,money(r.consign_offer),421,y,8.1,{max:14});
     });
 
-    // Final approved figures use the fourth row, directly beneath the individual appraisers.
-    const finalY=453;
+    // Final approved figures use the printed FINAL row.
+    const finalY=449;
     draw(p2,'FINAL',43,finalY,7.7,{max:10,bold:true});
-    draw(p2,money(a.final_trade_offer),166,finalY,8.1,{max:14,bold:true});
-    draw(p2,money(a.final_buy_offer),288,finalY,8.1,{max:14,bold:true});
-    draw(p2,money(a.final_consign_offer),412,finalY,8.1,{max:14,bold:true});
+    draw(p2,money(a.final_trade_offer),177,finalY,8.1,{max:14,bold:true});
+    draw(p2,money(a.final_buy_offer),299,finalY,8.1,{max:14,bold:true});
+    draw(p2,money(a.final_consign_offer),421,finalY,8.1,{max:14,bold:true});
 
     return pdf.save();
   }
