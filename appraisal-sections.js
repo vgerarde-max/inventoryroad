@@ -51,9 +51,28 @@
     const items=history.map(h=>`<div class="history-item"><div class="history-main"><strong>${escAudit(auditTitle(h))}</strong><div class="muted">${auditDetail(h)}</div></div><div class="history-meta">${escAudit(h.profiles?.full_name||'System / external form')}<br>${escAudit(formatWhen(h.changed_at))}</div></div>`).join('');
     return `<div class="submission-summary"><dl class="kv"><dt>Status</dt><dd><span class="badge ${escAudit(a.status)}">${escAudit(typeof statusLabel==='function'?statusLabel(a.status,APPRAISAL_STATUSES):a.status)}</span></dd><dt>Submitted</dt><dd>${escAudit(formatWhen(a.submitted_at))}</dd><dt>Source</dt><dd>${escAudit(a.external_source||'—')}</dd><dt>Submission ID</dt><dd>${escAudit(a.external_submission_id||'—')}</dd></dl></div><h3 class="history-title">Change History</h3><div class="change-history">${items}${initial}</div>`;
   }
+  async function saveClean(a){
+    const b=document.getElementById('saveAppraisal');
+    if(b){b.disabled=true;b.dataset.old=b.textContent;b.textContent='Saving…';}
+    const p={};
+    document.querySelectorAll('#pageContent [data-field]').forEach(el=>{
+      const key=el.dataset.field;
+      let v=el.value;
+      if(el.type==='number')v=v===''?null:Number(v);
+      p[key]=v;
+    });
+    p.vehicle_store_id=p.vehicle_store_id||null;
+    const {data,error}=await sb.from('appraisals').update(p).eq('id',a.id).select().single();
+    if(b){b.disabled=false;b.textContent=b.dataset.old||'Save Changes';}
+    if(error){if(typeof toast==='function')toast(error.message,true);else alert(error.message);return;}
+    const idx=state.appraisals.findIndex(x=>String(x.id)===String(a.id));
+    if(idx>=0)state.appraisals[idx]=data;
+    if(typeof toast==='function')toast('Appraisal saved.');
+    if(typeof renderAppraisalDetail==='function')renderAppraisalDetail(a.id);
+  }
   function bindActions(a){
     const save=document.getElementById('saveAppraisal');
-    if(save&&!save.dataset.rebound){save.dataset.rebound='1';save.addEventListener('click',e=>{e.preventDefault();if(typeof window.saveAppraisal==='function')window.saveAppraisal(a.id);else if(typeof saveAppraisal==='function')saveAppraisal(a.id);});}
+    if(save&&!save.dataset.rebound){save.dataset.rebound='1';save.addEventListener('click',e=>{e.preventDefault();saveClean(a);});}
     const del=document.getElementById('deleteAppraisal');
     if(del&&!del.dataset.rebound){del.dataset.rebound='1';del.addEventListener('click',e=>{e.preventDefault();if(typeof window.deleteAppraisal==='function')window.deleteAppraisal(a.id);else if(typeof deleteAppraisal==='function')deleteAppraisal(a.id);});}
   }
