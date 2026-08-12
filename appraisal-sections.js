@@ -1,5 +1,5 @@
 (function(){
-  const escAudit=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
+  const escAudit=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const labels={customer_name:'Customer name',customer_phone:'Phone',customer_email:'Email',salesperson:'Salesperson',customer_address_line1:'Address',customer_city:'City',customer_state:'State',customer_postal_code:'ZIP',year:'Year',make:'Make',model:'Model',floorplan:'Floorplan',vin:'VIN',rv_type:'RV type',mileage:'Mileage',vehicle_store_id:'Location',status:'Status',estimated_recon:'Estimated recon',manager_recon:'Manager recon',acv:'ACV',wholesale_value:'Wholesale value',retail_value:'Retail value',final_trade_offer:'Final trade offer',final_buy_offer:'Final buy offer',customer_notes:'Customer notes',comps_notes:'Comps notes'};
   let history=[];
 
@@ -24,6 +24,26 @@
   function diff(before,after){const out={};Object.keys(after).forEach(k=>{if(String(before[k]??'')!==String(after[k]??''))out[k]={from:before[k]??'',to:after[k]??''};});return out;}
   async function logChanges(id,changes){if(!Object.keys(changes).length)return;const uid=state.session?.user?.id;if(!uid)return;const {error}=await sb.from('status_history').insert({appraisal_id:id,changed_by:uid,note:changeNote(changes),changed_at:new Date().toISOString()});if(error)console.error('Could not save appraisal history',error);}
 
+  function bindActions(a){
+    const save=document.getElementById('saveAppraisal');
+    if(save&&!save.dataset.rebound){
+      save.dataset.rebound='1';
+      save.addEventListener('click',async e=>{
+        e.preventDefault();
+        const before={...a};
+        const after=snapshot();
+        if(typeof window.saveAppraisal==='function') await window.saveAppraisal(a.id);
+        else if(typeof saveAppraisal==='function') await saveAppraisal(a.id);
+        await logChanges(a.id,diff(before,after));
+      });
+    }
+    const del=document.getElementById('deleteAppraisal');
+    if(del&&!del.dataset.rebound){
+      del.dataset.rebound='1';
+      del.addEventListener('click',e=>{e.preventDefault();if(typeof window.deleteAppraisal==='function')window.deleteAppraisal(a.id);else if(typeof deleteAppraisal==='function')deleteAppraisal(a.id);});
+    }
+  }
+
   function enhance(){
     const a=currentAppraisal(),page=document.getElementById('pageContent');if(!a||!page)return;
     const grid=page.querySelector('.detail-grid');if(!grid||grid.querySelector(':scope > .appraisal-collapse'))return;
@@ -35,7 +55,7 @@
     const actions=parts[2].querySelector('.detail-actions')?.outerHTML||'';
     grid.className='grid detail-grid appraisal-section-stack';
     grid.innerHTML=`${section('Customer',customer,true,'customer-section')}${section('Vehicle',vehicle,true,'vehicle-section')}${section('Submission',historyHtml(a),false,'submission-section')}${section('Photos','<div id="appraisalPhotos">Loading photos…</div>',false,'photos-section')}${section('Appraisal',appraisalFields+actions,true,'appraisal-section')}`;
-    const save=document.getElementById('saveAppraisal');if(save&&!save.dataset.auditBound){save.dataset.auditBound='1';save.addEventListener('click',async()=>{const before={...a};const after=snapshot();await new Promise(r=>setTimeout(r,650));await logChanges(a.id,diff(before,after));});}
+    bindActions(a);
     if(typeof loadPhotos==='function')loadPhotos('appraisal',a.id);
     window.dispatchEvent(new CustomEvent('inventoryroad:appraisal-layout-ready',{detail:{id:a.id}}));
   }
