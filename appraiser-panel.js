@@ -20,8 +20,9 @@
     document.getElementById('appraiserValuePanel')?.remove();
     const card=document.createElement('details'); card.className='appraisal-collapse appraiser-value-card'; card.id='appraiserValuePanel'; card.open=true;
     card.innerHTML=`<summary>Appraisers & Values<span class="collapse-chevron">⌄</span></summary><div class="collapse-body"><p class="muted">Assign up to three users and enter each appraiser's Trade, Buy, and Consign values.</p><div class="appraiser-value-grid">${[1,2,3].map(n=>row(n,reviews.find(r=>r.review_order===n))).join('')}</div><div class="detail-actions"><button id="saveAppraiserValues" class="btn primary" type="button">Save Appraiser Values</button></div></div>`;
-    const appraisalSection=grid.querySelector('.appraisal-section');
-    if(appraisalSection)grid.insertBefore(card,appraisalSection);else grid.appendChild(card);
+    const center=grid.querySelector('.appraisal-center');
+    const photos=center?.querySelector('.photos-section');
+    if(center&&photos)center.insertBefore(card,photos);else if(center)center.appendChild(card);else{const appraisalSection=grid.querySelector('.appraisal-section');if(appraisalSection)grid.insertBefore(card,appraisalSection);else grid.appendChild(card);}
     document.getElementById('saveAppraiserValues').onclick=()=>save(id);
   }
   async function save(appraisalId){
